@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiplayer Tic Tac Toe</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.3/socket.io.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+        table { margin: 0 auto; border-collapse: collapse; }
+        td { width: 60px; height: 60px; text-align: center; vertical-align: middle; font-size: 24px; border: 1px solid #333; }
+        button { width: 100%; height: 100%; font-size: 24px; }
+        .winner { color: green; font-size: 20px; }
+        .tie { color: orange; font-size: 20px; }
+        .invalid { color: red; }
+    </style>
+    <script>
+        var socket = io();
+        var player = null;
+
+        socket.on('assign_player', function (data) {
+            player = data;
+            document.getElementById('status').textContent = `You are Player ${player}`;
+        });
+
+        socket.on('game_full', function () {
+            document.getElementById('status').textContent = 'Game is full. Please wait.';
+        });
+
+        socket.on('update_board', function (data) {
+            // Update the board dynamically
+            const table = document.getElementById('board');
+            table.innerHTML = ''; // Clear the table
+
+            for (let i = 0; i < data.board.length; i++) {
+                const row = document.createElement('tr');
+                for (let j = 0; j < data.board[i].length; j++) {
+                    const cell = document.createElement('td');
+                    if (data.board[i][j] === ' ') {
+                        const button = document.createElement('button');
+                        button.textContent = ' ';
+                        button.onclick = () => {
+                            socket.emit('move', { row: i, col: j });
+                        };
+                        cell.appendChild(button);
+                    } else {
+                        cell.textContent = data.board[i][j];
+                    }
+                    row.appendChild(cell);
+                }
+                table.appendChild(row);
+            }
+
+            // Display game status
+            const status = document.getElementById('status');
+            if (data.winner) {
+                status.textContent = `Player ${data.winner} wins!`;
+                status.className = 'winner';
+            } else if (data.tie) {
+                status.textContent = "It's a tie!";
+                status.className = 'tie';
+            } else {
+                status.textContent = `Player ${data.current_player}'s turn`;
+                status.className = '';
+            }
+        });
+
+        socket.on('invalid_move', function (data) {
+            const status = document.getElementById('status');
+            status.textContent = data.message;
+            status.className = 'invalid';
+        });
+
+        function resetGame() {
+            socket.emit('reset');
+        }
+    </script>
+</head>
+<body>
+    <h1>Multiplayer Tic Tac Toe</h1>
+    <p id="status">Waiting for players...</p>
+    <table id="board"></table>
+    <button onclick="resetGame()">Reset Game</button>
+</body>
+</html>
