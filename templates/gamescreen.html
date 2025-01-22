@@ -12,13 +12,55 @@
         }
         body {
             font-family: 'Arial', sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        /* Navigation Bar */
+        .navbar {
+            width: 100%;
+            background-color: #007bff;
+            color: white;
+            padding: 15px 20px;  /* Increased navbar padding */
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            background-color: #f0f0f0;
-            margin: 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;  /* Ensure it stays on top */
+            font-size: 1.2rem; /* Increase font size */
         }
+        .navbar .navbar-items {
+            display: flex;
+            justify-content: space-around;
+            width: 70%;  /* Adjust width for centering */
+        }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+        }
+        .navbar a:hover {
+            text-decoration: underline;
+        }
+        .navbar .username {
+            font-weight: bold;
+            margin-right: auto;
+        }
+        /* Adjust body content to accommodate navbar */
+        .content {
+            margin-top: 100px;  /* Increased space for navbar */
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        /* Game Container */
         .game-container {
             display: flex;
             flex-direction: column;
@@ -26,7 +68,7 @@
             justify-content: center;
             background-color: #ffffff;
             width: 90%;
-            max-width: 500px; /* Constrain maximum width */
+            max-width: 600px; /* Increased max width */
             height: auto;
             border-radius: 15px;
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
@@ -35,23 +77,23 @@
         h1 {
             font-size: 2rem;
             color: #333;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             text-align: center;
         }
         .grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             grid-template-rows: repeat(3, 1fr);
-            gap: 10px;
+            gap: 15px;  /* Increased gap between cells */
             width: 100%;
-            max-width: 350px; /* Restrict grid size */
+            max-width: 400px;  /* Increased grid size */
             aspect-ratio: 1; /* Maintain a square grid */
         }
         .cell {
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2rem;
+            font-size: 2.5rem; /* Increased font size */
             background-color: #e7e7e7;
             border-radius: 10px;
             border: 2px solid #ccc;
@@ -72,16 +114,16 @@
             cursor: not-allowed;
         }
         .status {
-            margin-top: 15px;
-            font-size: 1.2rem;
+            margin-top: 20px;  /* Increased margin */
+            font-size: 1.4rem; /* Increased font size */
             font-weight: bold;
             color: #444;
             text-align: center;
         }
         .play-again {
-            margin-top: 15px;
-            padding: 10px 20px;
-            font-size: 1rem;
+            margin-top: 20px;  /* Increased margin */
+            padding: 12px 25px;  /* Increased padding */
+            font-size: 1.2rem;  /* Increased font size */
             color: #fff;
             background-color: #007bff;
             border: none;
@@ -96,31 +138,43 @@
 </head>
 <body>
 
-<div class="game-container">
-    <h1>Tic Tac Toe</h1>
-    <div class="grid">
-        {% for i in range(3) %}
-            {% for j in range(3) %}
-                <div class="cell {% if winner or draw %}disabled{% endif %}"
-                    id="cell-{{ i * 3 + j }}"
-                    onclick="window.location='{{ url_for('make_move', row=i, col=j) }}'">
-                    {{ board[i][j] }}
-                </div>
-            {% endfor %}
-        {% endfor %}
+<!-- Navigation Bar -->
+<div class="navbar">
+    <div class="navbar-items">
+        <div class="username">Username: {{ session['username'] }}</div>
+        <a href="{{ url_for('logout') }}">Logout</a>
+        <a href="{{ url_for('view_history') }}">View Match History</a>
     </div>
-    <div class="status">
-        {% if winner %}
-            <p>{{ winner }} wins the game!</p>
-        {% elif draw %}
-            <p>The game is a draw!</p>
-        {% else %}
-            <p>Player {{ current_player }}'s turn</p>
+</div>
+
+<!-- Game Content -->
+<div class="content">
+    <div class="game-container">
+        <h1>Tic Tac Toe</h1>
+        <div class="grid">
+            {% for i in range(3) %}
+                {% for j in range(3) %}
+                    <div class="cell {% if winner or draw %}disabled{% endif %}"
+                        id="cell-{{ i * 3 + j }}"
+                        onclick="window.location='{{ url_for('make_move', row=i, col=j) }}'">
+                        {{ board[i][j] }}
+                    </div>
+                {% endfor %}
+            {% endfor %}
+        </div>
+        <div class="status">
+            {% if winner %}
+                <p>{{ winner }} wins the game!</p>
+            {% elif draw %}
+                <p>The game is a draw!</p>
+            {% else %}
+                <p>Player {{ current_player }}'s turn</p>
+            {% endif %}
+        </div>
+        {% if winner or draw %}
+            <button class="play-again" onclick="window.location='{{ url_for('reset_game') }}'">Play Again</button>
         {% endif %}
     </div>
-    {% if winner or draw %}
-        <button class="play-again" onclick="window.location='{{ url_for('reset_game') }}'">Play Again</button>
-    {% endif %}
 </div>
 
 </body>
